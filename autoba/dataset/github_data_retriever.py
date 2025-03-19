@@ -47,7 +47,7 @@ def initialize_csv():
     if not os.path.exists(ISSUE_CSV):
         with open(ISSUE_CSV, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["issueId", "issueCreatorLoginId", "createdDate", "closedDate", "title", "description"])
+            writer.writerow(["issueId", "issueCreatorLoginId", "createdDate", "closedDate", "closedBy", "title", "description"])
 
     if not os.path.exists(PR_CSV):
         with open(PR_CSV, "w", newline="", encoding="utf-8") as f:
@@ -170,11 +170,14 @@ def get_closed_issues():
                 logger.info(f"Issue #{issue_id} already processed completely, skipping")
                 continue
 
+            closed_by_user = issue.get("closed_by", {}).get("login", "N/A")  # Get closed user login
+
             issues.append({
                 "id": issue_id,
                 "creator": issue["user"]["login"],
                 "created_at": issue["created_at"],
                 "closed_at": closed_at,
+                "closed_by": closed_by_user,
                 "title": issue["title"].replace("\n", " ").replace(",", " "),
                 "body": (issue["body"] or "").replace("\n", " ").replace(",", " "),
             })
@@ -357,7 +360,7 @@ def save_issue_to_csv(issue):
         with open(ISSUE_CSV, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(
-                [issue["id"], issue["creator"], issue["created_at"], issue["closed_at"], issue["title"], issue["body"]])
+                [issue["id"], issue["creator"], issue["created_at"], issue["closed_at"], issue["closed_by"], issue["title"], issue["body"]])
         logger.debug(f"Saved issue #{issue['id']} to CSV")
     except Exception as e:
         logger.error(f"Error saving issue #{issue['id']} to CSV: {e}")
