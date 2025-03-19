@@ -47,7 +47,7 @@ def initialize_csv():
     if not os.path.exists(ISSUE_CSV):
         with open(ISSUE_CSV, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["issueId", "issueCreatorLoginId", "createdDate", "closedDate", "closedBy", "title", "description"])
+            writer.writerow(["issueId", "issueCreatorLoginId", "createdDate", "closedDate", "closedBy", "commenters", "title", "description"])
 
     if not os.path.exists(PR_CSV):
         with open(PR_CSV, "w", newline="", encoding="utf-8") as f:
@@ -170,7 +170,10 @@ def get_closed_issues():
                 logger.info(f"Issue #{issue_id} already processed completely, skipping")
                 continue
 
-            closed_by_user = issue.get("closed_by", {}).get("login", "N/A")  # Get closed user login
+            closed_by_user = issue.get("closed_by", {}).get("login", "N/A")
+
+            # Fetch list of users who commented
+            commenters = get_issue_commenters(issue_id)
 
             issues.append({
                 "id": issue_id,
@@ -178,6 +181,7 @@ def get_closed_issues():
                 "created_at": issue["created_at"],
                 "closed_at": closed_at,
                 "closed_by": closed_by_user,
+                "commenters": commenters,
                 "title": issue["title"].replace("\n", " ").replace(",", " "),
                 "body": (issue["body"] or "").replace("\n", " ").replace(",", " "),
             })
@@ -192,9 +196,26 @@ def get_closed_issues():
 
         logger.info(f"Fetched {len(data)} issues from page {page}")
         page += 1
-        time.sleep(2)  # Avoid hitting rate limits
+        time.sleep(2)
 
     return issues
+
+def get_issue_commenters(issue_id):
+    """Fetch users who have commented on a given issue."""
+    url = f"{BASE_URL}/issues/{issue_id}/comments"
+    commenters = set()
+
+    try:
+        response = requests.get(url, headers=HEADERS)
+        response.raise_for_status()
+
+        for comment in response.json():
+            commenters.add(comment["user"]["login"])
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error fetching comments for issue #{issue_id}: {e}")
+
+    return "; ".join(commenters) if commenters else "N/A"
 
 
 def get_linked_pull_requests(issue_number):
@@ -360,10 +381,11 @@ def save_issue_to_csv(issue):
         with open(ISSUE_CSV, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(
-                [issue["id"], issue["creator"], issue["created_at"], issue["closed_at"], issue["closed_by"], issue["title"], issue["body"]])
+                [issue["id"], issue["creator"], issue["created_at"], issue["closed_at"], issue["closed_by"], issue["commenters"], issue["title"], issue["body"]])
         logger.debug(f"Saved issue #{issue['id']} to CSV")
     except Exception as e:
         logger.error(f"Error saving issue #{issue['id']} to CSV: {e}")
+
 
 
 def save_pr_to_csv(pr):
