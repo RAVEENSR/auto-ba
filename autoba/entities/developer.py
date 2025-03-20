@@ -8,8 +8,8 @@ class Developer:
         self.longest_common_suffix_score = 0
         self.longest_common_sub_string_score = 0
         self.longest_common_sub_sequence_score = 0
-        self.bug_title_similarity = 0
-        self.bug_description_similarity = 0
+        self.issue_title_similarity = 0
+        self.issue_description_similarity = 0
         self.activeness = 0
 
     @property
@@ -33,12 +33,12 @@ class Developer:
         return self.__longest_common_sub_sequence_score
 
     @property
-    def bug_title_similarity(self):
-        return self.__bug_title_similarity
+    def issue_title_similarity(self):
+        return self.__issue_title_similarity
 
     @property
-    def bug_description_similarity(self):
-        return self.__bug_description_similarity
+    def issue_description_similarity(self):
+        return self.__issue_description_similarity
 
     @property
     def activeness(self):
@@ -64,13 +64,13 @@ class Developer:
     def longest_common_sub_sequence_score(self, val):
         self.__longest_common_sub_sequence_score = val
 
-    @bug_title_similarity.setter
-    def bug_title_similarity(self, val):
-        self.__bug_title_similarity = val
+    @issue_title_similarity.setter
+    def issue_title_similarity(self, val):
+        self.__issue_title_similarity = val
 
-    @bug_description_similarity.setter
-    def bug_description_similarity(self, val):
-        self.__bug_description_similarity = val
+    @issue_description_similarity.setter
+    def issue_description_similarity(self, val):
+        self.__issue_description_similarity = val
 
     @activeness.setter
     def activeness(self, val):
