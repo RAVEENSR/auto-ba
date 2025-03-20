@@ -135,10 +135,17 @@ def get_closed_issues():
         try:
             response = requests.get(url, headers=HEADERS)
             response.raise_for_status()
+            data = response.json()
+            if not isinstance(data, list):  # Ensure we got a list response
+                logger.error(f"Unexpected API response: {data}")
+                break
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching issues page {page}: {e}")
             time.sleep(60)  # Wait a minute before retrying
             continue
+        except json.JSONDecodeError:
+            logger.error("Failed to decode JSON response from GitHub")
+            break
 
         data = response.json()
         if not data:
@@ -170,7 +177,9 @@ def get_closed_issues():
                 logger.info(f"Issue #{issue_id} already processed completely, skipping")
                 continue
 
-            closed_by_user = issue.get("closed_by", {}).get("login", "N/A")
+            # Handle `closed_by` safely
+            closed_by_user = issue.get("closed_by")
+            closed_by_user = closed_by_user["login"] if closed_by_user else "N/A"
 
             # Fetch list of users who commented
             commenters = get_issue_commenters(issue_id)
@@ -208,9 +217,15 @@ def get_issue_commenters(issue_id):
     try:
         response = requests.get(url, headers=HEADERS)
         response.raise_for_status()
+        data = response.json()
 
-        for comment in response.json():
-            commenters.add(comment["user"]["login"])
+        if not isinstance(data, list):  # Ensure we have a list of comments
+            logger.error(f"Unexpected API response for issue #{issue_id}: {data}")
+            return "N/A"
+
+        for comment in data:
+            if comment.get("user"):
+                commenters.add(comment["user"].get("login", "Unknown"))
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error fetching comments for issue #{issue_id}: {e}")
