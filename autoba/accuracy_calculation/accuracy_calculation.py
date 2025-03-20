@@ -74,13 +74,12 @@ class AccuracyCalculator:
                     return int(row.activeness_rank)
         return 0
 
-    def test_weight_combination_accuracy_for_all_issues(self, autoba_processor, offset, limit, main_data_frame):
+    def test_weight_combination_accuracy_for_all_issues(self, autoba_processor, limit, main_data_frame):
         query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
                  "description, files, resolvers " \
                  "FROM issue " \
-                 "WHERE issue_id > '%s' and issue_id <= '%s' " \
                  "ORDER BY issue_id " \
-                 "LIMIT %d" % (offset, offset + limit, limit)
+                 "LIMIT %d" % limit
         all_issues = self.spark.sql(query1)
 
         results = []
