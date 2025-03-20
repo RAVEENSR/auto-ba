@@ -1,15 +1,21 @@
-class PullRequest:
+class Issue:
     """
     This class models a bug/issue.
     """
+
+    @staticmethod
+    def split_string(commenters_string):
+        return commenters_string.split("; ")
 
     def __init__(self, data):
         self.issue_id = data[0]
         self.creator_login_id = data[1]
         self.created_date = data[2]
         self.closed_date = data[3]
-        self.title = data[4]
-        self.description = data[5]
+        self.closed_by = data[4]
+        self.commenters = self.split_string(data[5])
+        self.title = data[6]
+        self.description = data[7]
 
     @property
     def issue_id(self):
@@ -26,6 +32,14 @@ class PullRequest:
     @property
     def closed_date(self):
         return self.__closed_date
+
+    @property
+    def closed_by(self):
+        return self.__closed_by
+
+    @property
+    def commenters(self):
+        return self.__commenters
 
     @property
     def title(self):
@@ -50,6 +64,14 @@ class PullRequest:
     @closed_date.setter
     def closed_date(self, val):
         self.__closed_date = val
+
+    @closed_by.setter
+    def closed_by(self, val):
+        self.__closed_by = val
+
+    @commenters.setter
+    def commenters(self, val):
+        self.__commenters = val
 
     @title.setter
     def title(self, val):
