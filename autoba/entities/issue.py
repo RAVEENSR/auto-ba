@@ -5,6 +5,8 @@ class Issue:
 
     @staticmethod
     def split_string(commenters_string):
+        if commenters_string is None:
+            return []
         return commenters_string.split("; ")
 
     def __init__(self, data):
