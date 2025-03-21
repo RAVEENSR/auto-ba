@@ -34,6 +34,14 @@ issue_df['resolvers'] = issue_df.apply(
     axis=1
 )
 
+# === Rename Columns ===
+new_column_names = [
+    "issue_id", "creator_login_id", "created_date", "closed_date",
+    "closed_by", "commenters", "title", "description", "files", "resolvers"
+]
+
+issue_df.columns = new_column_names
+
 # === Save Updated File ===
 output_file = "updated-issue-details.csv"
 issue_df.to_csv(output_file, index=False)
