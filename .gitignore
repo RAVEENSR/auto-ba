@@ -175,5 +175,5 @@ cython_debug/
 
 autoba/dataset/fetch_state.json
 autoba/dataset/github_fetch.log
-autoba/dataset/issue-details.csv
-autoba/dataset/related-pr-details.csv
+#autoba/dataset/issue-details.csv
+#autoba/dataset/related-pr-details.csv
