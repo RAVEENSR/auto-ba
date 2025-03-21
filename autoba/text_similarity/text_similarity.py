@@ -27,6 +27,9 @@ class TextSimilarityCalculator:
         2. Removing all the stopwords
         and returns a list of the cleaned text
         """
+        if not text:
+            return []  # Safely return empty if input is None or empty
+
         # Check character by character whether the character is a punctuation
         without_punctuation = [char for char in text if char not in string.punctuation]
 
@@ -34,7 +37,8 @@ class TextSimilarityCalculator:
         without_punctuation = ''.join(without_punctuation)
 
         # Remove any stopwords from the text
-        prior_to_stem = [word for word in without_punctuation.split() if word.lower() not in stopwords.words('english')]
+        prior_to_stem = [word for word in without_punctuation.split()
+                         if word.lower() not in stopwords.words('english')]
 
         stemmer = PorterStemmer()
         return [stemmer.stem(word) for word in prior_to_stem]

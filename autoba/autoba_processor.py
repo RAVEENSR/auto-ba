@@ -18,7 +18,7 @@ from autoba.entities.info_populated_issue import InfoPopulatedIssue
 from autoba.string_compare.file_path_similarity import FilePathSimilarityCalculator
 from autoba.text_similarity.text_similarity import TextSimilarityCalculator
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, split, trim
+from pyspark.sql.functions import explode, split, trim, col
 
 
 class AutoBAProcessor:
@@ -58,53 +58,61 @@ class AutoBAProcessor:
             .appName("AutoBA") \
             .getOrCreate()
 
-        # === Load issue data from CSV ===
-        self.all_issues_df = self.spark.read \
+        # Load issue data from CSV
+        raw_issues_df = self.spark.read \
             .format("csv") \
             .option("header", "true") \
             .option("inferSchema", "true") \
             .load(file_path)
 
-        # === Extract unique developer names from 'resolvers' column
+        # Filter out rows where 'resolvers' is null or empty
+        self.all_issues_df = raw_issues_df.filter(
+            (col("resolvers").isNotNull()) & (col("resolvers") != "")
+        )
+
+        # Extract unique developer names from 'resolvers' column
         self.all_developers_df = self.all_issues_df.select(
             explode(split("resolvers", ";")).alias("developer")
         ).withColumn("developer", trim("developer")).dropDuplicates()
 
-        # === Register Temp Views for Spark SQL
+        # Register Temp Views for Spark SQL
         self.all_issues_df.createOrReplaceTempView("issue")
         self.all_developers_df.createOrReplaceTempView("developer")
 
-        # === Collect all developers as list of Row objects ===
+        # Collect all developers as list of Row objects
         query = "SELECT * FROM developer"
         self.all_developers = self.spark.sql(query).collect()
 
-        # === Count stats ===
+        # Count stats
         self.issue_count = self.all_issues_df.count()
         self.developer_count = self.all_developers_df.count()
 
-    def __calculate_scores(self, df, new_issue, date_window=0):
+    def __calculate_scores(self, new_issue, date_window=0):
+        rows = []  # Collect rows as dicts
         # Calculate scores for each developer
         for developer in self.all_developers:
             issue_resolver = Developer(developer[0])
 
             # Read all the issues developer resolved before
             if date_window == 0:
-                query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
-                         "description, files, resolvers " \
-                         "FROM issue " \
-                         "WHERE closed_date < timestamp('%s') AND array_contains(split(resolvers, '; '), '%s')" % \
-                         (new_issue.created_date, issue_resolver.developer_login)
-                developer_resolved_issues = self.spark.sql(query1).collect()
+                query1 = f"""
+                    SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title,
+                           description, files, resolvers
+                    FROM issue
+                    WHERE closed_date < timestamp('{new_issue.created_date}')
+                      AND array_contains(split(resolvers, '; '), '{issue_resolver.developer_login}')
+                """
             else:
-                query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
-                         "description, files, resolvers " \
-                         "FROM issue " \
-                         "WHERE closed_date < timestamp('%s') " \
-                         "AND closed_date > timestamp('%s') " \
-                         "AND array_contains(resolvers, '%s')" % \
-                         (new_issue.created_date, new_issue.created_date - timedelta(days=date_window),
-                          issue_resolver.developer_login)
-                developer_resolved_issues = self.spark.sql(query1).collect()
+                start_date = new_issue.created_date - timedelta(days=date_window)
+                query1 = f"""
+                    SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title,
+                           description, files, resolvers
+                    FROM issue
+                    WHERE closed_date < timestamp('{new_issue.created_date}')
+                      AND closed_date > timestamp('{start_date}')
+                      AND array_contains(split(resolvers, '; '), '{issue_resolver.developer_login}')
+                """
+            developer_resolved_issues = self.spark.sql(query1).collect()
 
             for developer_resolved_issue in developer_resolved_issues:
                 old_issue = InfoPopulatedIssue(developer_resolved_issue)
@@ -143,42 +151,54 @@ class AutoBAProcessor:
                 issue_resolver.activeness +=\
                     self.activeness_calculator.calculate_integrator_activeness(new_issue, old_issue)
 
-            row = {'new_issue_id': new_issue.issue_id,
-                   'developer': issue_resolver.developer_login,
-                   'lcp': issue_resolver.longest_common_prefix_score,
-                   'lcs': issue_resolver.longest_common_suffix_score,
-                   'lc_substr': issue_resolver.longest_common_sub_string_score,
-                   'ls_subseq': issue_resolver.longest_common_sub_sequence_score,
-                   'cos_title': issue_resolver.issue_title_similarity,
-                   'cos_description': issue_resolver.issue_description_similarity,
-                   'activeness': issue_resolver.activeness,
-                   'file_similarity': issue_resolver.longest_common_prefix_score +
-                                      issue_resolver.longest_common_suffix_score +
-                                      issue_resolver.longest_common_sub_string_score +
-                                      issue_resolver.longest_common_sub_sequence_score,
-                   'text_similarity': issue_resolver.issue_title_similarity +
-                                      issue_resolver.issue_description_similarity}
-            df = df.append(row, ignore_index=True)
-        return df
+            row = {
+                'new_issue_id': new_issue.issue_id,
+                'developer': issue_resolver.developer_login,
+                'lcp': issue_resolver.longest_common_prefix_score,
+                'lcs': issue_resolver.longest_common_suffix_score,
+                'lc_substr': issue_resolver.longest_common_sub_string_score,
+                'ls_subseq': issue_resolver.longest_common_sub_sequence_score,
+                'cos_title': issue_resolver.issue_title_similarity,
+                'cos_description': issue_resolver.issue_description_similarity,
+                'activeness': issue_resolver.activeness,
+                'file_similarity': (
+                        issue_resolver.longest_common_prefix_score +
+                        issue_resolver.longest_common_suffix_score +
+                        issue_resolver.longest_common_sub_string_score +
+                        issue_resolver.longest_common_sub_sequence_score
+                ),
+                'text_similarity': (
+                        issue_resolver.issue_title_similarity +
+                        issue_resolver.issue_description_similarity
+                )
+            }
 
+            rows.append(row)
+
+        return rows  # Return list of rows (dicts)
 
     def __calculate_scores_for_all_issues(self, limit, date_window=0):
-        query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
-                 "description, files, resolvers " \
-                 "FROM issue " \
-                 "LIMIT %d" % limit
+        query1 = f"""
+            SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title,
+                   description, files, resolvers
+            FROM issue
+            LIMIT {limit}
+        """
         all_issues = self.spark.sql(query1)
 
         total_issues = 0
-        df = pd.DataFrame()
+        all_rows = []
 
         for new_issue in all_issues.collect():
             total_issues += 1
             new_issue = InfoPopulatedIssue(new_issue)
-            df = self.__calculate_scores(df, new_issue, date_window)
-            print("Scores calculated for: " + str(date_window) + "_" + str(new_issue.issue_id))
-            logging.info("Scores calculated for: " + str(date_window) + "_" + str(new_issue.issue_id))
-        df.to_csv(str(date_window) + "_" + self.repo_name + "_all_resolvers_scores_for_each_test_pr.csv", index=False)
+            issue_rows = self.__calculate_scores(new_issue, date_window)
+            all_rows.extend(issue_rows)
+            print(f"Scores calculated for: {date_window}_{new_issue.issue_id}")
+            logging.info(f"Scores calculated for: {date_window}_{new_issue.issue_id}")
+
+        df = pd.DataFrame(all_rows)
+        df.to_csv(f"{date_window}_{self.repo_name}_all_resolvers_scores_for_each_test_pr.csv", index=False)
         return df
 
     @staticmethod
@@ -347,8 +367,7 @@ class AutoBAProcessor:
         issue_data = [issue_id, creator_login_id, created_date_time, closed_date_time, closed_by, commenters,
                       title, description, files, resolvers]
         new_issue = InfoPopulatedIssue(issue_data)
-        df = pd.DataFrame()
-        df = self.__calculate_scores(df, new_issue, self.date_window)
+        df = self.__calculate_scores(new_issue, self.date_window)
         ranked_df = self.generate_ranked_list(df, self.alpha, self.beta, self.gamma)
         sorted_ranked_data_frame = ranked_df.sort_values('final_rank', ascending=True)
         ranked_five_df = sorted_ranked_data_frame[sorted_ranked_data_frame['final_rank'] <= 5]
@@ -372,8 +391,7 @@ class AutoBAProcessor:
         logging.info("Getting related developers by issued id for Issue" + str(issue_id) + " started")
         issue_details = self.get_issue_details(issue_id)
         new_issue = InfoPopulatedIssue(issue_details)
-        df = pd.DataFrame()
-        df = self.__calculate_scores(df, new_issue, self.date_window)
+        df = self.__calculate_scores(new_issue, self.date_window)
         ranked_df = self.generate_ranked_list(df, self.alpha, self.beta, self.gamma)
         sorted_ranked_data_frame = ranked_df.sort_values('final_rank', ascending=True)
         ranked_five_df = sorted_ranked_data_frame[sorted_ranked_data_frame['final_rank'] <= 5]
