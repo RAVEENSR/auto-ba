@@ -8,7 +8,6 @@ import logging
 from datetime import timedelta, datetime
 
 import pandas as pd
-import pymysql
 
 from autoba.accuracy_calculation.accuracy_calculation import AccuracyCalculator
 from autoba.activeness.developer_activeness import ActivenessCalculator
@@ -17,6 +16,7 @@ from autoba.entities.info_populated_issue import InfoPopulatedIssue
 from autoba.string_compare.file_path_similarity import FilePathSimilarityCalculator
 from autoba.text_similarity.text_similarity import TextSimilarityCalculator
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode, split, trim
 
 
 class AutoBAProcessor:
@@ -53,43 +53,34 @@ class AutoBAProcessor:
             .appName("AutoBA") \
             .getOrCreate()
 
-        # Read table pull_request #TODO
+        # === Load issue data from CSV ===
         self.all_issues_df = self.spark.read \
-            .format("jdbc") \
-            .option("url", "jdbc:mysql://" + acfg.mysql['host'] + "/" + self.database) \
-            .option("driver", 'com.mysql.cj.jdbc.Driver') \
-            .option("dbtable", acfg.mysql['pr_table']) \
-            .option("user", acfg.mysql['user']) \
-            .option("password", acfg.mysql['password']) \
-            .load()
+            .format("csv") \
+            .option("header", "true") \
+            .option("inferSchema", "true") \
+            .load("/dataset/updated-issue-details.csv")
 
-        # Read table integrator #TODO
-        self.all_developers_df = self.spark.read \
-            .format("jdbc") \
-            .option("url", "jdbc:mysql://" + acfg.mysql['host'] + "/" + self.database) \
-            .option("driver", 'com.mysql.cj.jdbc.Driver') \
-            .option("dbtable", acfg.mysql['integrator_table']) \
-            .option("user", acfg.mysql['user']) \
-            .option("password", acfg.mysql['password']) \
-            .load()
+        # === Extract unique developer names from 'resolvers' column
+        self.all_developers_df = self.all_issues_df.select(
+            explode(split("resolvers", ";")).alias("developer")
+        ).withColumn("developer", trim("developer")).dropDuplicates()
 
+        # === Register Temp Views for Spark SQL ===
         self.all_issues_df.createOrReplaceTempView("issue")
         self.all_developers_df.createOrReplaceTempView("developer")
 
-        # Get all the developers for the project
+        # === Collect all developers as list of Row objects ===
         query = "SELECT * FROM developer"
         self.all_developers = self.spark.sql(query).collect()
 
-        # Count the number of PRs
+        # === Count stats ===
         self.issue_count = self.all_issues_df.count()
-
-        # Count the number of developers
         self.developer_count = self.all_developers_df.count()
 
     def __calculate_scores(self, df, new_issue, date_window=1100):
         # Calculate scores for each developer
         for developer in self.all_developers:
-            issue_resolver = Developer(developer[1])
+            issue_resolver = Developer(developer[0])
 
             # Read all the PRs integrator reviewed before
             if date_window == 0:
