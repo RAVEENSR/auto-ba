@@ -1,4 +1,5 @@
 import string
+import nltk
 
 from nltk.corpus import stopwords
 from nltk.stem.porter import *
@@ -6,6 +7,10 @@ from nltk.stem.porter import *
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 
+try:
+    stopwords.words('english')
+except LookupError:
+    nltk.download('stopwords')
 
 class TextSimilarityCalculator:
     """

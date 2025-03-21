@@ -78,7 +78,6 @@ class AccuracyCalculator:
         query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
                  "description, files, resolvers " \
                  "FROM issue " \
-                 "ORDER BY issue_id " \
                  "LIMIT %d" % limit
         all_issues = self.spark.sql(query1)
 
@@ -169,7 +168,6 @@ class AccuracyCalculator:
                  "description, files, resolvers " \
                  "FROM issue " \
                  "WHERE issue_id > '%s' and issue_id <= '%s' " \
-                 "ORDER BY issue_id " \
                  "LIMIT %d" % (offset, offset + limit, limit)
         all_issues = self.spark.sql(query1)
 

@@ -1,3 +1,5 @@
+from dateutil import parser
+
 class Issue:
     """
     This class models a bug/issue.
@@ -9,11 +11,19 @@ class Issue:
             return []
         return commenters_string.split("; ")
 
+    @staticmethod
+    def _normalize_datetime(dt_value):
+        if isinstance(dt_value, str):
+            dt_value = parser.parse(dt_value)
+        if dt_value.tzinfo is not None:
+            dt_value = dt_value.replace(tzinfo=None)
+        return dt_value
+
     def __init__(self, data):
         self.issue_id = data[0]
         self.creator_login_id = data[1]
-        self.created_date = data[2]
-        self.closed_date = data[3]
+        self.created_date = self._normalize_datetime(data[2])
+        self.closed_date = self._normalize_datetime(data[3])
         self.closed_by = data[4]
         self.commenters = self.split_string(data[5])
         self.title = data[6]
