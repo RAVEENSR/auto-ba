@@ -3,6 +3,8 @@ autoba_processor.py
 ====================================
 The core of the AutoBA system
 """
+import os
+
 import autoba_config as acfg
 import logging
 from datetime import timedelta, datetime
@@ -46,6 +48,9 @@ class AutoBAProcessor:
         logging.info("AutoBA Processor created")
 
     def __initialise_app(self):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(current_dir, "dataset", "updated-issue-details.csv")
+
         # Create a spark session
         self.spark = SparkSession \
             .builder \
@@ -58,14 +63,14 @@ class AutoBAProcessor:
             .format("csv") \
             .option("header", "true") \
             .option("inferSchema", "true") \
-            .load("/dataset/updated-issue-details.csv")
+            .load(file_path)
 
         # === Extract unique developer names from 'resolvers' column
         self.all_developers_df = self.all_issues_df.select(
             explode(split("resolvers", ";")).alias("developer")
         ).withColumn("developer", trim("developer")).dropDuplicates()
 
-        # === Register Temp Views for Spark SQL ===
+        # === Register Temp Views for Spark SQL
         self.all_issues_df.createOrReplaceTempView("issue")
         self.all_developers_df.createOrReplaceTempView("developer")
 
@@ -77,17 +82,17 @@ class AutoBAProcessor:
         self.issue_count = self.all_issues_df.count()
         self.developer_count = self.all_developers_df.count()
 
-    def __calculate_scores(self, df, new_issue, date_window=1100):
+    def __calculate_scores(self, df, new_issue, date_window=0):
         # Calculate scores for each developer
         for developer in self.all_developers:
             issue_resolver = Developer(developer[0])
 
-            # Read all the PRs integrator reviewed before
+            # Read all the issues developer resolved before
             if date_window == 0:
                 query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
                          "description, files, resolvers " \
                          "FROM issue " \
-                         "WHERE closed_date < timestamp('%s') AND array_contains(resolvers, '%s')" % \
+                         "WHERE closed_date < timestamp('%s') AND array_contains(split(resolvers, '; '), '%s')" % \
                          (new_issue.created_date, issue_resolver.developer_login)
                 developer_resolved_issues = self.spark.sql(query1).collect()
             else:
@@ -157,11 +162,10 @@ class AutoBAProcessor:
         return df
 
 
-    def __calculate_scores_for_all_prs(self, limit, date_window=1100):
+    def __calculate_scores_for_all_issues(self, limit, date_window=0):
         query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
                  "description, files, resolvers " \
-                 "FROM issue " \ 
-                 "ORDER BY issue_id " \
+                 "FROM issue " \
                  "LIMIT %d" % limit
         all_issues = self.spark.sql(query1)
 
@@ -248,11 +252,11 @@ class AutoBAProcessor:
         """
         logging.info("Calculating scores and getting weight combinations for factors started")
         limit = int(limit)
-        df = self.__calculate_scores_for_all_prs(limit)
+        df = self.__calculate_scores_for_all_issues(limit)
         logging.info("Calculating scores and getting weight combinations for factors finished")
         return self.get_weight_combinations_for_factors(limit, df, use_csv_file=False)
 
-    def set_weight_combination_for_factors(self, alpha, beta, gamma, date_window=120):
+    def set_weight_combination_for_factors(self, alpha, beta, gamma, date_window=0):
         """
         This function sets the weights for each factor(file path similarity, text similarity, activeness) of the system.
         These weights are used to determine the final score for the developer. If date_window is not set default value
