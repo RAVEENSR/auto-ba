@@ -372,7 +372,7 @@ class AutoBAProcessor:
         ranked_df = self.generate_ranked_list(df, self.alpha, self.beta, self.gamma)
         sorted_ranked_data_frame = ranked_df.sort_values('final_rank', ascending=True)
         ranked_five_df = sorted_ranked_data_frame[sorted_ranked_data_frame['final_rank'] <= 5]
-        logging.info("Top five integrators for PR " + str(issue_id) + " presented")
+        logging.info("Top five developers for issue " + str(issue_id) + " presented")
         return ranked_five_df
 
     def get_related_developers_for_issue_by_issue_id(self, issue_id):
@@ -386,7 +386,7 @@ class AutoBAProcessor:
 
         :param issue_id: Issue id
         :type issue_id: int
-        :return: Top five integrators data frame
+        :return: Top five developers data frame
         :rtype: DataFrame
         """
         logging.info("Getting related developers by issue id for Issue " + str(issue_id) + " started")

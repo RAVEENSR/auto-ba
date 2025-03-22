@@ -10,7 +10,7 @@ class ActivenessCalculator:
         self.const_lambda = const_lambda
 
     def calculate_developer_activeness(self, new_issue, old_issue):
-        # calculate activeness of the integrator
+        # calculate activeness of the developer
         activeness = new_issue.created_date - old_issue.closed_date
         if hasattr(activeness, 'days'):
             activeness = activeness.days
