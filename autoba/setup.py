@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="auto-ba",
+    name="autoba",
     version="0.1.0",
     description="A tool for automated bug assignment",
     author="Raveen Savinda Rathnayake",
