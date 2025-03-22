@@ -9,7 +9,7 @@ class ActivenessCalculator:
         # time_decaying_parameter
         self.const_lambda = const_lambda
 
-    def calculate_integrator_activeness(self, new_issue, old_issue):
+    def calculate_developer_activeness(self, new_issue, old_issue):
         # calculate activeness of the integrator
         activeness = new_issue.created_date - old_issue.closed_date
         if hasattr(activeness, 'days'):
