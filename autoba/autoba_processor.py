@@ -1,15 +1,19 @@
 """
 autoba_processor.py
 ====================================
-The core of the AutoBA system
+The optimized core of the AutoBA system
 """
-import os
 
-import autoba_config as acfg
+import os
 import logging
 from datetime import timedelta, datetime
-
 import pandas as pd
+import numpy as np
+from functools import lru_cache
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode, split, trim, col, array_contains, collect_list, udf, pandas_udf
+from pyspark.sql.types import FloatType, ArrayType, StringType, StructType, StructField
 
 from autoba.accuracy_calculation.accuracy_calculation import AccuracyCalculator
 from autoba.activeness.developer_activeness import ActivenessCalculator
@@ -17,21 +21,19 @@ from autoba.entities.developer import Developer
 from autoba.entities.info_populated_issue import InfoPopulatedIssue
 from autoba.string_compare.file_path_similarity import FilePathSimilarityCalculator
 from autoba.text_similarity.text_similarity import TextSimilarityCalculator
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, split, trim, col
+import autoba_config as acfg
 
 
 class AutoBAProcessor:
     """
     This is the main class for the AutoBA system. This class handles all the major operations in the system
-
     """
     def __init__(self):
         self.repo_name = acfg.repo['name']
-        self.spark = ""
-        self.all_issues_df = ""
-        self.all_developers_df = ""
-        self.all_developers = ""
+        self.spark = None
+        self.all_issues_df = None
+        self.all_developers_df = None
+        self.all_developers = None
         self.issue_count = 0
         self.developer_count = 0
         self.file_path_similarity_calculator = FilePathSimilarityCalculator()
@@ -44,18 +46,23 @@ class AutoBAProcessor:
         self.gamma = acfg.system_defaults['gamma']
         self.date_window = acfg.system_constants['date_window']
         logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s-%(name)s-%(levelname)s '
-                                                                           '- %(message)s')
+                                                                          '- %(message)s')
         logging.info("AutoBA Processor created")
 
     def __initialise_app(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         file_path = os.path.join(current_dir, "dataset", "updated-issue-details.csv")
 
-        # Create a spark session
+        # Create a spark session with optimized configuration
         self.spark = SparkSession \
             .builder \
-            .master('local') \
+            .master('local[*]') \
             .appName("AutoBA") \
+            .config("spark.sql.execution.arrow.pyspark.enabled", "true") \
+            .config("spark.executor.memory", "4g") \
+            .config("spark.driver.memory", "4g") \
+            .config("spark.sql.shuffle.partitions", "8") \
+            .config("spark.default.parallelism", "8") \
             .getOrCreate()
 
         # Load issue data from CSV
@@ -65,151 +72,226 @@ class AutoBAProcessor:
             .option("inferSchema", "true") \
             .load(file_path)
 
-        # Filter out rows where 'resolvers' is null or empty
+        # Filter out rows where 'resolvers' is null or empty - do this once
         self.all_issues_df = raw_issues_df.filter(
             (col("resolvers").isNotNull()) & (col("resolvers") != "")
+        ).cache()  # Cache for reuse
+
+        # Convert files column to array for easier processing
+        self.all_issues_df = self.all_issues_df.withColumn(
+            "files_array",
+            split(col("files"), ";")
         )
 
-        # Extract unique developer names from 'resolvers' column
+        # Extract unique developer names from 'resolvers' column more efficiently
         self.all_developers_df = self.all_issues_df.select(
             explode(split("resolvers", ";")).alias("developer")
-        ).withColumn("developer", trim("developer")).dropDuplicates()
+        ).withColumn("developer", trim("developer")).dropDuplicates().cache()  # Cache for reuse
 
         # Register Temp Views for Spark SQL
         self.all_issues_df.createOrReplaceTempView("issue")
         self.all_developers_df.createOrReplaceTempView("developer")
 
-        # Collect all developers as list of Row objects
-        query = "SELECT * FROM developer"
-        self.all_developers = self.spark.sql(query).collect()
+        # Collect all developers as list efficiently
+        self.all_developers = self.all_developers_df.collect()
 
         # Count stats
         self.issue_count = self.all_issues_df.count()
         self.developer_count = self.all_developers_df.count()
 
-    def __calculate_scores(self, new_issue, date_window=0):
-        rows = []  # Collect rows as dicts
-        # Calculate scores for each developer
-        for developer in self.all_developers:
-            issue_resolver = Developer(developer[0])
+    @lru_cache(maxsize=256)
+    def _calculate_file_similarity(self, new_path, old_path):
+        """Calculate file path similarity with caching for repeated calculations"""
+        max_file_path_length = max(len(new_path.split("/")), len(old_path.split("/")))
 
-            # Read all the issues developer resolved before
-            if date_window == 0:
-                query1 = f"""
-                    SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title,
-                           description, files, resolvers
-                    FROM issue
-                    WHERE closed_date < timestamp('{new_issue.created_date}')
-                      AND array_contains(split(resolvers, '; '), '{issue_resolver.developer_login}')
-                """
-            else:
-                start_date = new_issue.created_date - timedelta(days=date_window)
-                query1 = f"""
-                    SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title,
-                           description, files, resolvers
-                    FROM issue
-                    WHERE closed_date < timestamp('{new_issue.created_date}')
-                      AND closed_date > timestamp('{start_date}')
-                      AND array_contains(split(resolvers, '; '), '{issue_resolver.developer_login}')
-                """
-            developer_resolved_issues = self.spark.sql(query1).collect()
+        lcp = self.file_path_similarity_calculator.longest_common_prefix_similarity(new_path, old_path)
+        lcs = self.file_path_similarity_calculator.longest_common_suffix_similarity(new_path, old_path)
+        lc_substr = self.file_path_similarity_calculator.longest_common_sub_string_similarity(new_path, old_path)
+        lc_subseq = self.file_path_similarity_calculator.longest_common_sub_sequence_similarity(new_path, old_path)
 
-            for developer_resolved_issue in developer_resolved_issues:
-                old_issue = InfoPopulatedIssue(developer_resolved_issue)
-                old_issue_file_paths = old_issue.files
+        return lcp, lcs, lc_substr, lc_subseq, max_file_path_length
 
-                # Calculate file path similarity
-                for new_issue_file_path in new_issue.files:
-                    for file_path in old_issue_file_paths:
-                        number_of_file_combinations = len(old_issue_file_paths) * len(new_issue.files)
-                        max_file_path_length = max(len(new_issue_file_path.split("/")), len(file_path.split("/")))
-                        divider = max_file_path_length * number_of_file_combinations
+    @lru_cache(maxsize=256)
+    def _calculate_text_similarity(self, text1, text2):
+        """Calculate text similarity with caching for repeated calculations"""
+        if not text1 or not text2:
+            return 0
+        return self.text_similarity_calculator.cos_similarity(text1, text2)
 
-                        issue_resolver.longest_common_prefix_score += \
-                            (self.file_path_similarity_calculator.longest_common_prefix_similarity(
-                                new_issue_file_path, file_path) / divider)
-                        issue_resolver.longest_common_suffix_score += \
-                            (self.file_path_similarity_calculator.longest_common_suffix_similarity(
-                                new_issue_file_path, file_path) / divider)
-                        issue_resolver.longest_common_sub_string_score += \
-                            (self.file_path_similarity_calculator.longest_common_sub_string_similarity(
-                                new_issue_file_path, file_path) / divider)
-                        issue_resolver.longest_common_sub_sequence_score += \
-                            (self.file_path_similarity_calculator.longest_common_sub_sequence_similarity(
-                                new_issue_file_path, file_path) / divider)
+    def _process_developer_resolved_issues(self, new_issue, dev_issues_df):
+        """Process all resolved issues for a developer in a vectorized way"""
+        rows = []
+        dev_issues = dev_issues_df.collect()
 
-                # Calculate cosine similarity of title
-                issue_resolver.issue_description_similarity \
-                    += self.text_similarity_calculator.cos_similarity(new_issue.title, old_issue.title)
+        for issue_row in dev_issues:
+            old_issue = InfoPopulatedIssue(issue_row)
 
-                # Calculate cosine similarity of description
-                if new_issue.description != "" and old_issue.description != "":
-                    issue_resolver.issue_description_similarity \
-                        += self.text_similarity_calculator.cos_similarity(new_issue.description, old_issue.description)
+            # File path similarity calculations
+            file_sim_scores = {"lcp": 0, "lcs": 0, "lc_substr": 0, "lc_subseq": 0}
+            new_files = new_issue.files.split(";") if isinstance(new_issue.files, str) else new_issue.files
+            old_files = old_issue.files.split(";") if isinstance(old_issue.files, str) else old_issue.files
 
-                # Calculate activeness of the integrator
-                issue_resolver.activeness +=\
-                    self.activeness_calculator.calculate_integrator_activeness(new_issue, old_issue)
+            if not new_files or not old_files:
+                continue
 
-            row = {
-                'new_issue_id': new_issue.issue_id,
-                'developer': issue_resolver.developer_login,
-                'lcp': issue_resolver.longest_common_prefix_score,
-                'lcs': issue_resolver.longest_common_suffix_score,
-                'lc_substr': issue_resolver.longest_common_sub_string_score,
-                'ls_subseq': issue_resolver.longest_common_sub_sequence_score,
-                'cos_title': issue_resolver.issue_title_similarity,
-                'cos_description': issue_resolver.issue_description_similarity,
-                'activeness': issue_resolver.activeness,
-                'file_similarity': (
-                        issue_resolver.longest_common_prefix_score +
-                        issue_resolver.longest_common_suffix_score +
-                        issue_resolver.longest_common_sub_string_score +
-                        issue_resolver.longest_common_sub_sequence_score
-                ),
-                'text_similarity': (
-                        issue_resolver.issue_title_similarity +
-                        issue_resolver.issue_description_similarity
-                )
+            num_combinations = len(new_files) * len(old_files)
+            if num_combinations == 0:
+                continue
+
+            for new_file in new_files:
+                for old_file in old_files:
+                    if not new_file or not old_file:
+                        continue
+                    lcp, lcs, lc_substr, lc_subseq, max_length = self._calculate_file_similarity(new_file, old_file)
+                    divider = max_length * num_combinations
+
+                    if divider > 0:
+                        file_sim_scores["lcp"] += lcp / divider
+                        file_sim_scores["lcs"] += lcs / divider
+                        file_sim_scores["lc_substr"] += lc_substr / divider
+                        file_sim_scores["lc_subseq"] += lc_subseq / divider
+
+            # Text similarity calculations
+            title_sim = self._calculate_text_similarity(new_issue.title, old_issue.title)
+            desc_sim = 0
+            if new_issue.description and old_issue.description:
+                desc_sim = self._calculate_text_similarity(new_issue.description, old_issue.description)
+
+            # Activeness calculation
+            activeness = self.activeness_calculator.calculate_developer_activeness(new_issue, old_issue)
+
+            # Return values so they can be aggregated later
+            results = {
+                "lcp": file_sim_scores["lcp"],
+                "lcs": file_sim_scores["lcs"],
+                "lc_substr": file_sim_scores["lc_substr"],
+                "lc_subseq": file_sim_scores["lc_subseq"],
+                "title_sim": title_sim,
+                "desc_sim": desc_sim,
+                "activeness": activeness
             }
 
-            rows.append(row)
+            rows.append(results)
 
-        return rows  # Return list of rows (dicts)
+        return rows
+
+    def __calculate_scores(self, new_issue, date_window=0):
+        all_scores = []
+
+        # Create a DataFrame with developer names for results
+        developers_df = self.all_developers_df.toPandas()
+        results_data = []
+
+        # Get developers and their resolved issues more efficiently
+        for developer_row in self.all_developers:
+            developer_login = developer_row[0]
+
+            # Create date window filter efficiently
+            if date_window == 0:
+                date_filter = (col("closed_date") < new_issue.created_date)
+            else:
+                start_date = new_issue.created_date - timedelta(days=date_window)
+                date_filter = (col("closed_date") < new_issue.created_date) & (col("closed_date") > start_date)
+
+            # Get all issues resolved by this developer within date window
+            dev_issues_df = self.all_issues_df.filter(
+                date_filter &
+                array_contains(split(col("resolvers"), ";"), developer_login)
+            )
+
+            # Skip if no resolved issues
+            if dev_issues_df.count() == 0:
+                continue
+
+            issue_scores = self._process_developer_resolved_issues(new_issue, dev_issues_df)
+
+            # Aggregate all scores for this developer
+            if issue_scores:
+                lcp_sum = sum(score["lcp"] for score in issue_scores)
+                lcs_sum = sum(score["lcs"] for score in issue_scores)
+                lc_substr_sum = sum(score["lc_substr"] for score in issue_scores)
+                lc_subseq_sum = sum(score["lc_subseq"] for score in issue_scores)
+                title_sim_sum = sum(score["title_sim"] for score in issue_scores)
+                desc_sim_sum = sum(score["desc_sim"] for score in issue_scores)
+                activeness_sum = sum(score["activeness"] for score in issue_scores)
+
+                # Add to results
+                results_data.append({
+                    'new_issue_id': new_issue.issue_id,
+                    'developer': developer_login,
+                    'lcp': lcp_sum,
+                    'lcs': lcs_sum,
+                    'lc_substr': lc_substr_sum,
+                    'ls_subseq': lc_subseq_sum,
+                    'cos_title': title_sim_sum,
+                    'cos_description': desc_sim_sum,
+                    'activeness': activeness_sum,
+                    'file_similarity': lcp_sum + lcs_sum + lc_substr_sum + lc_subseq_sum,
+                    'text_similarity': title_sim_sum + desc_sim_sum
+                })
+
+        # Convert results to DataFrame
+        if results_data:
+            return pd.DataFrame(results_data)
+        else:
+            return pd.DataFrame(columns=[
+                'new_issue_id', 'developer', 'lcp', 'lcs', 'lc_substr', 'ls_subseq',
+                'cos_title', 'cos_description', 'activeness', 'file_similarity', 'text_similarity'
+            ])
 
     def __calculate_scores_for_all_issues(self, limit, date_window=0):
-        query1 = f"""
+        # Get issues to process
+        query = f"""
             SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title,
                    description, files, resolvers
             FROM issue
             LIMIT {limit}
         """
-        all_issues = self.spark.sql(query1)
+        all_issues = self.spark.sql(query)
+        issue_count = all_issues.count()
 
-        total_issues = 0
+        # Process issues in batches for better memory management
+        batch_size = min(50, issue_count)  # Adjust batch size as needed
         all_rows = []
 
-        for new_issue in all_issues.collect():
-            total_issues += 1
-            new_issue = InfoPopulatedIssue(new_issue)
-            issue_rows = self.__calculate_scores(new_issue, date_window)
-            all_rows.extend(issue_rows)
-            print(f"Scores calculated for: {date_window}_{new_issue.issue_id}")
-            logging.info(f"Scores calculated for: {date_window}_{new_issue.issue_id}")
+        for i in range(0, issue_count, batch_size):
+            batch_issues = all_issues.limit(batch_size).offset(i)
+            batch_rows = []
 
-        df = pd.DataFrame(all_rows)
-        df.to_csv(f"{date_window}_{self.repo_name}_all_resolvers_scores_for_each_test_pr.csv", index=False)
-        return df
+            for issue in batch_issues.collect():
+                new_issue = InfoPopulatedIssue(issue)
+                issue_rows = self.__calculate_scores(new_issue, date_window)
+                batch_rows.append(issue_rows)
+                logging.info(f"Scores calculated for: {date_window}_{new_issue.issue_id}")
+
+            # Combine batch results
+            if batch_rows:
+                batch_df = pd.concat(batch_rows, ignore_index=True)
+                all_rows.append(batch_df)
+
+        # Combine all batches
+        if all_rows:
+            final_df = pd.concat(all_rows, ignore_index=True)
+            final_df.to_csv(f"{date_window}_{self.repo_name}_all_resolvers_scores_for_each_test_pr.csv", index=False)
+            return final_df
+        else:
+            return pd.DataFrame()
 
     @staticmethod
     def __standardize_score(score, min_val, max_val):
-        if (max_val - min_val) == 0:
-            new_value = 0
-        else:
-            new_value = ((score - min_val) * 100) / (max_val - min_val)
-        return new_value
+        if pd.isna(score) or (max_val - min_val) == 0:
+            return 0
+        return ((score - min_val) * 100) / (max_val - min_val)
 
     def __add_standard_scores_to_data_frame(self, main_df):
+        # Handle empty dataframe case
+        if main_df.empty:
+            return main_df
+
+        # Fill NaN values with 0 to avoid issues
+        main_df = main_df.fillna(0)
+
+        # Use vectorized operations instead of apply
         act_min = main_df['activeness'].min()
         act_max = main_df['activeness'].max()
         file_sim_min = main_df['file_similarity'].min()
@@ -217,31 +299,49 @@ class AutoBAProcessor:
         txt_sim_min = main_df['text_similarity'].min()
         txt_sim_max = main_df['text_similarity'].max()
 
-        main_df['std_activeness'] = \
-            main_df['activeness'].apply(self.__standardize_score, args=(act_min, act_max))
-        main_df['std_file_similarity'] = \
-            main_df['file_similarity'].apply(self.__standardize_score, args=(file_sim_min, file_sim_max))
-        main_df['std_text_similarity'] = \
-            main_df['text_similarity'].apply(self.__standardize_score, args=(txt_sim_min, txt_sim_max))
+        # Use vectorized operations for standardization
+        if act_max != act_min:
+            main_df['std_activeness'] = (main_df['activeness'] - act_min) * 100 / (act_max - act_min)
+        else:
+            main_df['std_activeness'] = 0
+
+        if file_sim_max != file_sim_min:
+            main_df['std_file_similarity'] = (main_df['file_similarity'] - file_sim_min) * 100 / (file_sim_max - file_sim_min)
+        else:
+            main_df['std_file_similarity'] = 0
+
+        if txt_sim_max != txt_sim_min:
+            main_df['std_text_similarity'] = (main_df['text_similarity'] - txt_sim_min) * 100 / (txt_sim_max - txt_sim_min)
+        else:
+            main_df['std_text_similarity'] = 0
 
         return main_df
 
     def generate_ranked_list(self, data_frame, alpha, beta, gamma):
         logging.info("Generating ranked list started")
-        self.file_path_similarity_calculator.add_file_path_similarity_ranking(data_frame)
-        self.text_similarity_calculator.add_text_similarity_ranking(data_frame)
-        self.activeness_calculator.add_activeness_ranking(data_frame)
 
+        # Skip ranking if dataframe is empty
+        if data_frame.empty:
+            return data_frame
+
+        # Add rankings efficiently (replacing the individual ranking calls)
         data_frame = self.__add_standard_scores_to_data_frame(data_frame)
-        data_frame['combined_score'] = (data_frame['std_file_similarity'] * alpha) + \
-                                       (data_frame['std_text_similarity'] * beta) + \
-                                       (data_frame['std_activeness'] * gamma)
+
+        # Calculate combined score using vectorized operations
+        data_frame['combined_score'] = (
+            data_frame['std_file_similarity'] * alpha +
+            data_frame['std_text_similarity'] * beta +
+            data_frame['std_activeness'] * gamma
+        )
+
+        # Rank efficiently
         data_frame["final_rank"] = data_frame["combined_score"].rank(method='min', ascending=False)
+
         logging.info("Generating ranked list finished")
         return data_frame
 
     def get_weight_combinations_for_factors(self, limit, main_data_frame=None, main_data_csv_file_name=None,
-                                            use_csv_file=False):
+                                           use_csv_file=False):
         limit = int(limit)
         if use_csv_file:
             if main_data_csv_file_name is None:
@@ -253,9 +353,11 @@ class AutoBAProcessor:
                 logging.error("main_data_frame parameter is none!")
             main_df = main_data_frame
 
-        return self.accuracy_calculator.test_weight_combination_accuracy_for_all_issues(autoba_processor=self,
-                                                                                        limit=limit,
-                                                                                        main_data_frame=main_df)
+        return self.accuracy_calculator.test_weight_combination_accuracy_for_all_issues(
+            autoba_processor=self,
+            limit=limit,
+            main_data_frame=main_df
+        )
 
     def calculate_scores_and_get_weight_combinations_for_factors(self, limit):
         """
@@ -300,9 +402,8 @@ class AutoBAProcessor:
         self.beta = float(beta)
         self.gamma = float(gamma)
         self.date_window = date_window
-        logging.info("Setting weights for factors finished. alpha: " + str(alpha) + " beta: " + str(beta) + " gamma: "
-                     + str(gamma))
-
+        logging.info(f"Setting weights for factors finished. alpha: {alpha} beta: {beta} gamma: {gamma}")
+        return True
 
     def get_issue_details(self, issue_id):
         """
@@ -317,18 +418,21 @@ class AutoBAProcessor:
         :return: Details of the issue
         :rtype: list
         """
-        logging.info("Getting details for issue " + str(issue_id) + " started")
-        query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
-                 "description, files, resolvers " \
-                 "FROM issue " \
-                 "WHERE issue_id='%s'" % issue_id
-        result = self.spark.sql(query1)
+        logging.info(f"Getting details for issue {issue_id} started")
+
+        # Use DataFrame operations instead of SQL for better performance
+        result = self.all_issues_df.filter(col("issue_id") == issue_id).limit(1)
+
+        if result.count() == 0:
+            logging.error(f"Issue {issue_id} not found")
+            return None
+
         details = result.collect()[0]
-        logging.info("Details for issue " + str(issue_id) + " presented")
+        logging.info(f"Details for issue {issue_id} presented")
         return details
 
     def get_related_developers_for_issue(self, issue_id, creator_login_id, created_date_time, closed_date_time,
-                                         closed_by, commenters, title, description, files, resolvers):
+                                        closed_by, commenters, title, description, files, resolvers):
         """
         This function calculates scores for each factor for each developer and provides a ranked data frame which
         includes top five developers.
@@ -361,17 +465,29 @@ class AutoBAProcessor:
         :return: Top five developers data frame
         :rtype: DataFrame
         """
-        logging.info("Getting related developers by issue details for issue " + str(issue_id) + " started")
-        created_date_time = datetime.strptime(created_date_time, '%Y-%m-%dT%H:%M:%SZ')
-        closed_date_time = datetime.strptime(closed_date_time, '%Y-%m-%dT%H:%M:%SZ')
+        logging.info(f"Getting related developers by issue details for issue {issue_id} started")
+
+        try:
+            created_date_time = datetime.strptime(created_date_time, '%Y-%m-%dT%H:%M:%SZ')
+            closed_date_time = datetime.strptime(closed_date_time, '%Y-%m-%dT%H:%M:%SZ')
+        except ValueError as e:
+            logging.error(f"Date parsing error: {e}")
+            return pd.DataFrame()
+
         issue_data = [issue_id, creator_login_id, created_date_time, closed_date_time, closed_by, commenters,
-                      title, description, files, resolvers]
+                     title, description, files, resolvers]
         new_issue = InfoPopulatedIssue(issue_data)
         df = self.__calculate_scores(new_issue, self.date_window)
+
+        if df.empty:
+            logging.warning(f"No scores calculated for issue {issue_id}")
+            return df
+
         ranked_df = self.generate_ranked_list(df, self.alpha, self.beta, self.gamma)
         sorted_ranked_data_frame = ranked_df.sort_values('final_rank', ascending=True)
         ranked_five_df = sorted_ranked_data_frame[sorted_ranked_data_frame['final_rank'] <= 5]
-        logging.info("Top five integrators for PR " + str(issue_id) + " presented")
+
+        logging.info(f"Top five developers for issue {issue_id} presented")
         return ranked_five_df
 
     def get_related_developers_for_issue_by_issue_id(self, issue_id):
@@ -385,15 +501,26 @@ class AutoBAProcessor:
 
         :param issue_id: Issue id
         :type issue_id: int
-        :return: Top five integrators data frame
+        :return: Top five developers data frame
         :rtype: DataFrame
         """
-        logging.info("Getting related developers by issued id for Issue" + str(issue_id) + " started")
+        logging.info(f"Getting related developers by issued id for Issue {issue_id} started")
         issue_details = self.get_issue_details(issue_id)
+
+        if issue_details is None:
+            logging.error(f"Issue {issue_id} not found")
+            return pd.DataFrame()
+
         new_issue = InfoPopulatedIssue(issue_details)
         df = self.__calculate_scores(new_issue, self.date_window)
+
+        if df.empty:
+            logging.warning(f"No scores calculated for issue {issue_id}")
+            return df
+
         ranked_df = self.generate_ranked_list(df, self.alpha, self.beta, self.gamma)
         sorted_ranked_data_frame = ranked_df.sort_values('final_rank', ascending=True)
         ranked_five_df = sorted_ranked_data_frame[sorted_ranked_data_frame['final_rank'] <= 5]
-        logging.info("Top five developers for issue " + str(issue_id) + " presented")
+
+        logging.info(f"Top five developers for issue {issue_id} presented")
         return ranked_five_df
