@@ -7,6 +7,6 @@ system_defaults = {'alpha': 0.1,
                    'gamma': 0.7,
                   }
 
-system_constants = {'date_window': 1100,
+system_constants = {'date_window': 0,
                     'const_lambda': -1
                    }
