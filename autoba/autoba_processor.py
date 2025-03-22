@@ -9,7 +9,7 @@ from datetime import timedelta, datetime
 
 import pandas as pd
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, split, trim, col, array_contains, lit
+from pyspark.sql.functions import explode, split, trim, col, array_contains, lit, broadcast
 
 import autoba_config as acfg
 from autoba.accuracy_calculation.accuracy_calculation import AccuracyCalculator
@@ -49,10 +49,17 @@ class AutoBAProcessor:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         file_path = os.path.join(current_dir, "dataset", "updated-issue-details.csv")
 
-        # Create a Spark session
-        self.spark = SparkSession.builder.master('local').appName("AutoBA").getOrCreate()
+        # Create a Spark session with configuration settings set at build time
+        self.spark = SparkSession.builder \
+            .master('local') \
+            .appName("AutoBA") \
+            .config("spark.sql.shuffle.partitions", "4") \
+            .config("spark.executor.memory", "4g") \
+            .config("spark.driver.memory", "4g") \
+            .config("spark.dynamicAllocation.enabled", "true") \
+            .getOrCreate()
 
-        # Load issue data from CSV
+        # Load issue data from CSV and filter out rows with null or empty 'resolvers'
         raw_issues_df = self.spark.read.format("csv") \
             .option("header", "true") \
             .option("inferSchema", "true") \
@@ -60,29 +67,30 @@ class AutoBAProcessor:
             .load(file_path)
 
         # Count total issues before filtering
-        self.total_issue_count = raw_issues_df.count()
-        print("Total issues (before filtering):", self.total_issue_count)
+        print("Total issues (before filtering):", raw_issues_df.count())
 
         # Filter out rows with null or empty 'resolvers'
         self.all_issues_df = raw_issues_df.filter((col("resolvers").isNotNull()) & (col("resolvers") != ""))
 
-        # Add resolver_array column to avoid repeated splitting in every query
+        # Add a precomputed resolver_array column (and cache the DataFrame)
         self.all_issues_df = self.all_issues_df.withColumn("resolver_array", split(col("resolvers"), r";\s*"))
-        self.all_issues_df.cache()  # Cache the DataFrame as it is used repeatedly
+        self.all_issues_df.cache()  # Persist the DataFrame in memory
 
         # Extract unique developer names from the resolver_array column
-        self.all_developers_df = self.all_issues_df.select(
-            explode("resolver_array").alias("developer")
-        ).withColumn("developer", trim("developer")).dropDuplicates()
-
-        # Register Temp Views (if needed for other parts of the system)
-        self.all_issues_df.createOrReplaceTempView("issue")
+        dev_df = self.all_issues_df.select(explode("resolver_array").alias("developer")) \
+            .withColumn("developer", trim(col("developer"))) \
+            .dropDuplicates()
+        # Broadcast the small developer DataFrame to optimize joins and filters
+        self.all_developers_df = broadcast(dev_df)
         self.all_developers_df.createOrReplaceTempView("developer")
 
-        # Collect all developers as a list of Row objects
-        self.all_developers = self.spark.sql("SELECT * FROM developer").collect()
+        # Register the issues DataFrame as a temp view (if needed)
+        self.all_issues_df.createOrReplaceTempView("issue")
 
-        # Count stats after filtering
+        # Collect all developers as a list of Row objects from the broadcasted DataFrame
+        self.all_developers = self.all_developers_df.collect()
+
+        # Count stats
         self.issue_count = self.all_issues_df.count()
         self.developer_count = self.all_developers_df.count()
 
@@ -119,7 +127,9 @@ class AutoBAProcessor:
                 # Calculate file path similarity for each file combination
                 for new_issue_file_path in new_issue.files:
                     for file_path in old_issue_file_paths:
-                        max_file_path_length = max(len(new_issue_file_path.split("/")), len(file_path.split("/")))
+                        max_file_path_length = max(
+                            len(new_issue_file_path.split("/")), len(file_path.split("/"))
+                        )
                         divider = max_file_path_length * number_of_file_combinations
                         issue_resolver.longest_common_prefix_score += (
                             self.file_path_similarity_calculator.longest_common_prefix_similarity(
@@ -179,7 +189,7 @@ class AutoBAProcessor:
         return rows
 
     def __calculate_scores_for_all_issues(self, limit, date_window=0):
-        # Instead of SQL, use the cached DataFrame and limit() method
+        # Use the cached DataFrame with limit() and collect all issues
         all_issues = self.all_issues_df.limit(limit).collect()
         total_issues = 0
         all_rows = []
@@ -213,8 +223,10 @@ class AutoBAProcessor:
         txt_sim_max = main_df['text_similarity'].max()
 
         main_df['std_activeness'] = main_df['activeness'].apply(self.__standardize_score, args=(act_min, act_max))
-        main_df['std_file_similarity'] = main_df['file_similarity'].apply(self.__standardize_score, args=(file_sim_min, file_sim_max))
-        main_df['std_text_similarity'] = main_df['text_similarity'].apply(self.__standardize_score, args=(txt_sim_min, txt_sim_max))
+        main_df['std_file_similarity'] = main_df['file_similarity'].apply(self.__standardize_score,
+                                                                          args=(file_sim_min, file_sim_max))
+        main_df['std_text_similarity'] = main_df['text_similarity'].apply(self.__standardize_score,
+                                                                          args=(txt_sim_min, txt_sim_max))
         return main_df
 
     def generate_ranked_list(self, data_frame, alpha, beta, gamma):
