@@ -23,8 +23,14 @@ GITHUB_TOKEN = os.getenv("GITHUB_PAT")
 if not GITHUB_TOKEN:
     raise ValueError("GitHub PAT is not set. Please set the GITHUB_PAT environment variable.")
 
-REPO_OWNER = "rails"
-REPO_NAME = "rails"
+REPO_OWNER = os.getenv("REPO_OWNER")
+if not REPO_OWNER:
+    raise ValueError("REPO_OWNER is not set. Please set the REPO_OWNER environment variable.")
+
+REPO_NAME = os.getenv("REPO_NAME")
+if not REPO_NAME:
+    raise ValueError("REPO_NAME is not set. Please set the REPO_NAME environment variable.")
+
 BASE_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
 HEADERS = {
     "Authorization": f"token {GITHUB_TOKEN}",
@@ -36,10 +42,9 @@ FETCH_MONTHS = int(os.getenv("FETCH_MONTHS", 4))
 FETCH_START_DATE = datetime.now() - timedelta(days=FETCH_MONTHS * 30)
 
 # CSV Filenames
-ISSUE_CSV = "issue-details.csv"
-PR_CSV = "related-pr-details.csv"
-# New: State file to track progress
-STATE_FILE = "fetch_state.json"
+ISSUE_CSV = f"{REPO_NAME}-issue-details.csv"
+PR_CSV = f"{REPO_NAME}-related-pr-details.csv"
+STATE_FILE = f"{REPO_NAME}-fetch_state.json"
 
 
 # Ensure CSV files exist with headers
