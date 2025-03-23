@@ -173,9 +173,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-autoba/dataset/fetch_state.json
-autoba/dataset/github_fetch.log
-autoba/dataset/issue-details.csv
-autoba/dataset/related-pr-details.csv
+autoba/dataset/*fetch_state.json
+autoba/dataset/*github_fetch.log
+autoba/dataset/*issue-details.csv
+autoba/dataset/*related-pr-details.csv
 
 .DS_Store

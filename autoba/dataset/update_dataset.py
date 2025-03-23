@@ -32,8 +32,8 @@ def get_resolvers(prs, commenters, closed_by):
 
 def main():
     # === Load Data ===
-    issue_df = pd.read_csv(f"{REPO_NAME}-issue-details.csv")
-    pr_df = pd.read_csv(f"{REPO_NAME}-related-pr-details.csv")
+    issue_df = pd.read_csv(f"{REPO_NAME}_issue_details.csv")
+    pr_df = pd.read_csv(f"{REPO_NAME}_related_pr_details.csv")
 
     # === Apply Logic to Issues ===
     issue_df['files'] = issue_df['issueId'].apply(lambda x: get_file_paths(get_related_prs(pr_df, x)))
@@ -51,7 +51,7 @@ def main():
     issue_df.columns = new_column_names
 
     # === Save Updated File ===
-    output_file = f"{REPO_NAME}-updated-issue-details.csv"
+    output_file = f"{REPO_NAME}_updated_issue_details.csv"
     issue_df.to_csv(output_file, index=False)
 
     print(f"✅ File saved as '{output_file}'")
