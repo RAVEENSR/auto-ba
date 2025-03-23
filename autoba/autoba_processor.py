@@ -47,7 +47,7 @@ class AutoBAProcessor:
 
     def __initialise_app(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(current_dir, "dataset", "updated-issue-details.csv")
+        file_path = os.path.join(current_dir, "dataset", f"{self.repo_name}_updated_issue_details.csv")
 
         # Create a Spark session with configuration settings set at build time
         self.spark = SparkSession.builder \
