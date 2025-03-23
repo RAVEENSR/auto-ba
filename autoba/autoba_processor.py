@@ -313,10 +313,10 @@ class AutoBAProcessor:
 
         :EXAMPLE:
 
-        >>> autoba.get_issue_details(10)
+        >>> autoba.get_issue_details('10')
 
-        :param issue_id: Issue id number
-        :type issue_id: int
+        :param issue_id: Issue id
+        :type issue_id: str
         :return: Details of the issue
         :rtype: list
         """
@@ -328,45 +328,31 @@ class AutoBAProcessor:
         logging.info("Details for issue " + str(issue_id) + " presented")
         return details
 
-    def get_related_developers_for_issue(self, issue_id, creator_login_id, created_date_time, closed_date_time,
-                                         closed_by, commenters, title, description, files, resolvers):
+    def get_related_developers_for_issue(self, issue_id, creator_login_id, created_date_time, title, description):
         """
         This function calculates scores for each factor for each developer and provides a ranked data frame which
         includes top five developers.
 
         :EXAMPLE:
 
-        >>> autoba.get_related_developers_for_issue(10, 'John', '2024-03-19T18:03:48Z', '2025-03-19T18:03:48Z', 'Max',
-        >>> 'Max,David', 'Issue Title', 'Issue Description', 'abc.js,def.js,ghi.js', 'Max,David')
+        >>> autoba.get_related_developers_for_issue('10', 'John', '2024-03-19T18:03:48Z', 'Title', 'Description')
 
         :param issue_id: Issue id
-        :type issue_id: int
+        :type issue_id: str
         :param creator_login_id: Issue creator username
-        :type creator_login_id: String
+        :type creator_login_id: str
         :param created_date_time: Creation date of issue
-        :type created_date_time: String
-        :param closed_date_time: Closed date of issue
-        :type closed_date_time: String
-        :param closed_by: Issue closed by username
-        :type closed_by: String
-        :param commenters: Commenters of the issue
-        :type commenters: String
+        :type created_date_time: str
         :param title: Title of the issue
-        :type title: String
+        :type title: str
         :param description: Description of the issue
-        :type description: String
-        :param files: File paths of associated to the issue
-        :type files: String
-        :param resolvers: Resolvers of the issue
-        :type resolvers: String
+        :type description: str
         :return: Top five developers data frame
         :rtype: DataFrame
         """
         logging.info("Getting related developers by issue details for issue " + str(issue_id) + " started")
         created_date_time = datetime.strptime(created_date_time, '%Y-%m-%dT%H:%M:%SZ')
-        closed_date_time = datetime.strptime(closed_date_time, '%Y-%m-%dT%H:%M:%SZ')
-        issue_data = [issue_id, creator_login_id, created_date_time, closed_date_time, closed_by, commenters,
-                      title, description, files, resolvers]
+        issue_data = [issue_id, creator_login_id, created_date_time, None, None, None, title, description, None, None]
         new_issue = InfoPopulatedIssue(issue_data)
         df = self.__calculate_scores(new_issue, self.date_window)
         ranked_df = self.generate_ranked_list(df, self.alpha, self.beta, self.gamma)
@@ -385,7 +371,7 @@ class AutoBAProcessor:
         >>> autoba.get_related_developers_for_issue_by_issue_id(10)
 
         :param issue_id: Issue id
-        :type issue_id: int
+        :type issue_id: str
         :return: Top five developers data frame
         :rtype: DataFrame
         """
