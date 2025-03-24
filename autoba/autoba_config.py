@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-repo = {'name': 'scala3'}
+repo = {'name': 'akka'}
 
 system_defaults = {'alpha': 0.1,
                    'beta': 0.2,

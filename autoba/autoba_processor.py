@@ -260,6 +260,24 @@ class AutoBAProcessor:
             autoba_processor=self, limit=limit, main_data_frame=main_df
         )
 
+    def get_weight_combinations_for_factors_with_individual_factors(self, limit, main_data_frame=None,
+                                                                    main_data_csv_file_name=None, use_csv_file=False):
+        limit = int(limit)
+        if use_csv_file:
+            if main_data_csv_file_name is None:
+                logging.error("main_data_csv_file_name parameter is none!")
+            logging.info("Getting weight combinations for factors for csv file:" + str(main_data_csv_file_name))
+            main_df = pd.read_csv(main_data_csv_file_name)
+        else:
+            if main_data_frame is None:
+                logging.error("main_data_frame parameter is none!")
+            main_df = main_data_frame
+
+        return self.accuracy_calculator.test_weight_combination_accuracy_for_all_issues_with_individual_factor_accuracy(
+            autoba_processor=self, limit=limit, main_data_frame=main_df
+        )
+
+
     def calculate_scores_and_get_weight_combinations_for_factors(self, limit):
         """
         This function calculates scores for every issue and provides accuracy for each factor weight combination.

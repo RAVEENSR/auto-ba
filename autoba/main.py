@@ -71,6 +71,17 @@ def api_get_weight_accuracy_by_file():
     return jsonify(result=result_object), 200
 
 
+@app.route('/get_weight_accuracy_by_file_with_individual_factor_accuracy', methods=['POST'])
+def api_get_weight_accuracy_by_file_with_individual_factor_accuracy():
+    content = request.json
+    limit = content['limit']
+    file_name = request.form['file_name']
+    result_object = autoba.get_weight_combinations_for_factors_with_individual_factors(limit=int(limit),
+                                                                main_data_csv_file_name=file_name, use_csv_file=True)
+    logging.info("Weight Combination Accuracy by File Results Served")
+    return jsonify(result=result_object), 200
+
+
 @app.route('/find_issue_developers', methods=['POST', 'GET'])
 def api_find_pr_integrators():
     if request.method == 'POST':
