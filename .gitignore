@@ -56,7 +56,7 @@ cover/
 *.pot
 
 # Django stuff:
-*.log
+#*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -177,5 +177,6 @@ autoba/dataset/*fetch_state.json
 autoba/dataset/*github_fetch.log
 autoba/dataset/*issue-details.csv
 autoba/dataset/*related-pr-details.csv
+autoba/app.log
 
 .DS_Store

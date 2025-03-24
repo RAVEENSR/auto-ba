@@ -1,0 +1,618 @@
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+25/03/23 16:34:40 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Total issues (before filtering): 359
+25/03/23 16:34:53 WARN HintErrorLogger: A join hint (strategy=broadcast) is specified but it is not part of a join relation.
+25/03/23 16:34:55 WARN HintErrorLogger: A join hint (strategy=broadcast) is specified but it is not part of a join relation.
+Scores calculated for: 0_32681
+Scores calculated for: 0_32667
+Scores calculated for: 0_32665
+Scores calculated for: 0_32659
+Scores calculated for: 0_32653
+Scores calculated for: 0_32630
+Scores calculated for: 0_32618
+Scores calculated for: 0_32603
+Scores calculated for: 0_32583
+Scores calculated for: 0_32576
+Scores calculated for: 0_32572
+Scores calculated for: 0_32564
+Scores calculated for: 0_32561
+Scores calculated for: 0_32546
+Scores calculated for: 0_32545
+Scores calculated for: 0_32540
+Scores calculated for: 0_32517
+Scores calculated for: 0_32511
+Scores calculated for: 0_32507
+Scores calculated for: 0_32505
+Scores calculated for: 0_32503
+Scores calculated for: 0_32501
+Scores calculated for: 0_32500
+Scores calculated for: 0_32498
+Scores calculated for: 0_32488
+Scores calculated for: 0_32482
+Scores calculated for: 0_32475
+Scores calculated for: 0_32464
+Scores calculated for: 0_32458
+Scores calculated for: 0_32454
+Scores calculated for: 0_32440
+Scores calculated for: 0_32436
+Scores calculated for: 0_32415
+Scores calculated for: 0_32409
+Scores calculated for: 0_32408
+Scores calculated for: 0_32381
+Scores calculated for: 0_32380
+Scores calculated for: 0_32379
+Scores calculated for: 0_32378
+Scores calculated for: 0_32376
+Scores calculated for: 0_32372
+Scores calculated for: 0_32367
+Scores calculated for: 0_32364
+Scores calculated for: 0_32359
+Scores calculated for: 0_32344
+Scores calculated for: 0_32339
+Scores calculated for: 0_32337
+Scores calculated for: 0_32332
+Scores calculated for: 0_32330
+Scores calculated for: 0_32329
+Scores calculated for: 0_32328
+Scores calculated for: 0_32309
+Scores calculated for: 0_32307
+Scores calculated for: 0_32304
+Scores calculated for: 0_32300
+Scores calculated for: 0_32272
+Scores calculated for: 0_32271
+Scores calculated for: 0_32267
+Scores calculated for: 0_32264
+Scores calculated for: 0_32203
+Scores calculated for: 0_32197
+Scores calculated for: 0_32182
+Scores calculated for: 0_32172
+Scores calculated for: 0_32169
+Scores calculated for: 0_32157
+Scores calculated for: 0_32136
+Scores calculated for: 0_32128
+Scores calculated for: 0_32126
+Scores calculated for: 0_32115
+Scores calculated for: 0_32109
+Scores calculated for: 0_32105
+Scores calculated for: 0_32093
+Scores calculated for: 0_32090
+Scores calculated for: 0_32088
+Scores calculated for: 0_32085
+Scores calculated for: 0_32080
+Scores calculated for: 0_32079
+Scores calculated for: 0_32069
+Scores calculated for: 0_32064
+Scores calculated for: 0_32051
+Scores calculated for: 0_32040
+Scores calculated for: 0_32036
+Scores calculated for: 0_32026
+Scores calculated for: 0_32018
+Scores calculated for: 0_32015
+Scores calculated for: 0_32014
+Scores calculated for: 0_32012
+Scores calculated for: 0_32009
+Scores calculated for: 0_32008
+Scores calculated for: 0_32001
+Scores calculated for: 0_31979
+Scores calculated for: 0_31977
+Scores calculated for: 0_31976
+Scores calculated for: 0_31974
+Scores calculated for: 0_31954
+Scores calculated for: 0_31946
+Scores calculated for: 0_31938
+Scores calculated for: 0_31937
+Scores calculated for: 0_31931
+Scores calculated for: 0_31928
+Scores calculated for: 0_31925
+Scores calculated for: 0_31916
+Scores calculated for: 0_31905
+Scores calculated for: 0_31904
+Scores calculated for: 0_31895
+Scores calculated for: 0_31885
+Scores calculated for: 0_31881
+Scores calculated for: 0_31880
+Scores calculated for: 0_31869
+Scores calculated for: 0_31862
+Scores calculated for: 0_31861
+Scores calculated for: 0_31840
+Scores calculated for: 0_31839
+Scores calculated for: 0_31838
+Scores calculated for: 0_31830
+Scores calculated for: 0_31826
+Scores calculated for: 0_31822
+Scores calculated for: 0_31821
+Scores calculated for: 0_31814
+Scores calculated for: 0_31806
+Scores calculated for: 0_31803
+Scores calculated for: 0_31801
+Scores calculated for: 0_31796
+Scores calculated for: 0_31790
+Scores calculated for: 0_31788
+Scores calculated for: 0_31785
+Scores calculated for: 0_31778
+Scores calculated for: 0_31776
+Scores calculated for: 0_31769
+Scores calculated for: 0_31764
+Scores calculated for: 0_31761
+Scores calculated for: 0_31760
+Scores calculated for: 0_31759
+Scores calculated for: 0_31756
+Scores calculated for: 0_31752
+Scores calculated for: 0_31729
+Scores calculated for: 0_31724
+Scores calculated for: 0_31720
+Scores calculated for: 0_31717
+Scores calculated for: 0_31715
+Scores calculated for: 0_31711
+Scores calculated for: 0_31705
+Scores calculated for: 0_31698
+Scores calculated for: 0_31692
+Scores calculated for: 0_31689
+Scores calculated for: 0_31677
+Scores calculated for: 0_31674
+Scores calculated for: 0_31671
+Scores calculated for: 0_31670
+Scores calculated for: 0_31664
+Scores calculated for: 0_31660
+Scores calculated for: 0_31658
+Scores calculated for: 0_31653
+Scores calculated for: 0_31650
+Scores calculated for: 0_31649
+Scores calculated for: 0_31647
+Scores calculated for: 0_31646
+Scores calculated for: 0_31641
+Scores calculated for: 0_31637
+Scores calculated for: 0_31628
+Scores calculated for: 0_31623
+Scores calculated for: 0_31616
+Scores calculated for: 0_31610
+Scores calculated for: 0_31606
+Scores calculated for: 0_31593
+Scores calculated for: 0_31589
+Scores calculated for: 0_31587
+Scores calculated for: 0_31586
+Scores calculated for: 0_31585
+Scores calculated for: 0_31583
+Scores calculated for: 0_31580
+Scores calculated for: 0_31577
+Scores calculated for: 0_31576
+Scores calculated for: 0_31569
+Scores calculated for: 0_31567
+Scores calculated for: 0_31559
+Scores calculated for: 0_31555
+Scores calculated for: 0_31552
+Scores calculated for: 0_31546
+Scores calculated for: 0_31531
+Scores calculated for: 0_31530
+Scores calculated for: 0_31522
+Scores calculated for: 0_31512
+Scores calculated for: 0_31510
+Scores calculated for: 0_31505
+Scores calculated for: 0_31503
+Scores calculated for: 0_31499
+Scores calculated for: 0_31497
+Scores calculated for: 0_31493
+Scores calculated for: 0_31478
+Scores calculated for: 0_31473
+Scores calculated for: 0_31470
+Scores calculated for: 0_31466
+Scores calculated for: 0_31463
+Scores calculated for: 0_31461
+Scores calculated for: 0_31454
+Scores calculated for: 0_31455
+Scores calculated for: 0_31445
+Scores calculated for: 0_31443
+Scores calculated for: 0_31438
+Scores calculated for: 0_31437
+Scores calculated for: 0_31431
+Scores calculated for: 0_31429
+Scores calculated for: 0_31428
+Scores calculated for: 0_31422
+Scores calculated for: 0_31419
+Scores calculated for: 0_31414
+Scores calculated for: 0_31411
+Scores calculated for: 0_31403
+Scores calculated for: 0_31400
+Scores calculated for: 0_31399
+Scores calculated for: 0_31396
+Scores calculated for: 0_31368
+Scores calculated for: 0_31366
+Scores calculated for: 0_31364
+Scores calculated for: 0_31363
+Scores calculated for: 0_31362
+Scores calculated for: 0_31360
+Scores calculated for: 0_31359
+Scores calculated for: 0_31355
+Scores calculated for: 0_31348
+Scores calculated for: 0_31340
+Scores calculated for: 0_31338
+Scores calculated for: 0_31331
+Scores calculated for: 0_31329
+Scores calculated for: 0_31328
+Scores calculated for: 0_31323
+Scores calculated for: 0_31308
+Scores calculated for: 0_31271
+Scores calculated for: 0_31270
+Scores calculated for: 0_31268
+Scores calculated for: 0_31266
+Scores calculated for: 0_31263
+Scores calculated for: 0_31260
+Scores calculated for: 0_31256
+Scores calculated for: 0_31250
+Scores calculated for: 0_31221
+Scores calculated for: 0_31185
+Scores calculated for: 0_31132
+Scores calculated for: 0_31130
+Scores calculated for: 0_31100
+Scores calculated for: 0_31097
+Scores calculated for: 0_31095
+Scores calculated for: 0_31087
+Scores calculated for: 0_31077
+Scores calculated for: 0_31068
+Scores calculated for: 0_31058
+Scores calculated for: 0_31053
+Scores calculated for: 0_30989
+Scores calculated for: 0_30978
+Scores calculated for: 0_30864
+Scores calculated for: 0_30859
+Scores calculated for: 0_30831
+Scores calculated for: 0_30802
+Scores calculated for: 0_30739
+Scores calculated for: 0_30723
+Scores calculated for: 0_30568
+Scores calculated for: 0_30564
+Scores calculated for: 0_30447
+Scores calculated for: 0_30446
+Scores calculated for: 0_30412
+Scores calculated for: 0_30358
+Scores calculated for: 0_30333
+Scores calculated for: 0_30310
+Scores calculated for: 0_30249
+Scores calculated for: 0_30245
+Scores calculated for: 0_30205
+Scores calculated for: 0_30201
+Scores calculated for: 0_30133
+Scores calculated for: 0_30077
+Scores calculated for: 0_30002
+Scores calculated for: 0_29993
+Scores calculated for: 0_29951
+Scores calculated for: 0_29933
+Scores calculated for: 0_29922
+Scores calculated for: 0_29892
+Scores calculated for: 0_29865
+Scores calculated for: 0_29850
+Scores calculated for: 0_29795
+Scores calculated for: 0_29791
+Scores calculated for: 0_29685
+Scores calculated for: 0_29557
+Scores calculated for: 0_29414
+Scores calculated for: 0_29330
+Scores calculated for: 0_29277
+Scores calculated for: 0_29261
+Scores calculated for: 0_29143
+Scores calculated for: 0_29134
+Scores calculated for: 0_29109
+Scores calculated for: 0_29078
+Scores calculated for: 0_29055
+Scores calculated for: 0_28922
+Scores calculated for: 0_28824
+Scores calculated for: 0_28756
+Scores calculated for: 0_28641
+Scores calculated for: 0_28583
+Scores calculated for: 0_28436
+Scores calculated for: 0_28327
+Scores calculated for: 0_28304
+Scores calculated for: 0_28040
+Scores calculated for: 0_28024
+Scores calculated for: 0_27960
+Scores calculated for: 0_27683
+Scores calculated for: 0_27452
+Scores calculated for: 0_27363
+Scores calculated for: 0_27347
+Scores calculated for: 0_27330
+Scores calculated for: 0_27163
+Scores calculated for: 0_26876
+Scores calculated for: 0_26573
+Scores calculated for: 0_26367
+Scores calculated for: 0_26290
+Scores calculated for: 0_26195
+Scores calculated for: 0_26111
+Scores calculated for: 0_26072
+Scores calculated for: 0_25839
+Scores calculated for: 0_25823
+Scores calculated for: 0_25701
+Scores calculated for: 0_25628
+Scores calculated for: 0_25623
+Scores calculated for: 0_25535
+Scores calculated for: 0_25441
+Scores calculated for: 0_25418
+Scores calculated for: 0_25327
+Scores calculated for: 0_25251
+Scores calculated for: 0_25147
+Scores calculated for: 0_25073
+Scores calculated for: 0_25069
+Scores calculated for: 0_24951
+Scores calculated for: 0_24912
+Scores calculated for: 0_24901
+Scores calculated for: 0_24879
+Scores calculated for: 0_24869
+Scores calculated for: 0_24835
+Scores calculated for: 0_24756
+Scores calculated for: 0_24751
+Scores calculated for: 0_24465
+Scores calculated for: 0_24394
+Scores calculated for: 0_24369
+Scores calculated for: 0_23951
+Scores calculated for: 0_23086
+Scores calculated for: 0_22849
+Scores calculated for: 0_22730
+Scores calculated for: 0_21899
+Scores calculated for: 0_21889
+Scores calculated for: 0_21708
+Scores calculated for: 0_21669
+Scores calculated for: 0_21389
+Scores calculated for: 0_20583
+Scores calculated for: 0_19707
+Scores calculated for: 0_19360
+Scores calculated for: 0_19045
+Scores calculated for: 0_18846
+Scores calculated for: 0_17451
+Scores calculated for: 0_16617
+Scores calculated for: 0_16615
+Scores calculated for: 0_13977
+Scores calculated for: 0_13932
+Scores calculated for: 0_12960
+
+---------------------------------------------------------------------------
+alpha= 0.1 beta= 0.1 gamma= 0.8
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9220055710306406          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9475087122719433
+
+---------------------------------------------------------------------------
+alpha= 0.1 beta= 0.2 gamma= 0.7
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9490407456981271
+
+---------------------------------------------------------------------------
+alpha= 0.1 beta= 0.3 gamma= 0.6
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9489478951874494
+
+---------------------------------------------------------------------------
+alpha= 0.1 beta= 0.4 gamma= 0.5
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9502013770815997
+
+---------------------------------------------------------------------------
+alpha= 0.1 beta= 0.5 gamma= 0.4
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9303621169916435          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9515941347417668
+
+---------------------------------------------------------------------------
+alpha= 0.1 beta= 0.6 gamma= 0.3
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9303621169916435          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.952058387295156
+
+---------------------------------------------------------------------------
+alpha= 0.1 beta= 0.7 gamma= 0.2
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9303621169916435          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.952058387295156
+
+---------------------------------------------------------------------------
+alpha= 0.1 beta= 0.8 gamma= 0.1
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9508049054010055
+
+---------------------------------------------------------------------------
+alpha= 0.2 beta= 0.1 gamma= 0.7
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9220055710306406          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9475087122719433
+
+---------------------------------------------------------------------------
+alpha= 0.2 beta= 0.2 gamma= 0.6
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9489014699321104
+
+---------------------------------------------------------------------------
+alpha= 0.2 beta= 0.3 gamma= 0.5
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9489478951874494
+
+---------------------------------------------------------------------------
+alpha= 0.2 beta= 0.4 gamma= 0.4
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9503406528476166
+
+---------------------------------------------------------------------------
+alpha= 0.2 beta= 0.5 gamma= 0.3
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9303621169916435          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.952058387295156
+
+---------------------------------------------------------------------------
+alpha= 0.2 beta= 0.6 gamma= 0.2
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9303621169916435          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.952058387295156
+
+---------------------------------------------------------------------------
+alpha= 0.2 beta= 0.7 gamma= 0.1
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9506656296349889
+
+---------------------------------------------------------------------------
+alpha= 0.3 beta= 0.1 gamma= 0.6
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9220055710306406          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9475087122719433
+
+---------------------------------------------------------------------------
+alpha= 0.3 beta= 0.2 gamma= 0.5
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9489014699321104
+
+---------------------------------------------------------------------------
+alpha= 0.3 beta= 0.3 gamma= 0.4
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9488086194214326
+
+---------------------------------------------------------------------------
+alpha= 0.3 beta= 0.4 gamma= 0.3
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9508049054010055
+
+---------------------------------------------------------------------------
+alpha= 0.3 beta= 0.5 gamma= 0.2
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9303621169916435          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9521976630611726
+
+---------------------------------------------------------------------------
+alpha= 0.3 beta= 0.6 gamma= 0.1
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9303621169916435          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9515941347417669
+
+---------------------------------------------------------------------------
+alpha= 0.4 beta= 0.1 gamma= 0.5
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9489014699321104
+
+---------------------------------------------------------------------------
+alpha= 0.4 beta= 0.2 gamma= 0.4
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9493657224854996
+
+---------------------------------------------------------------------------
+alpha= 0.4 beta= 0.3 gamma= 0.3
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9492728719748218
+
+---------------------------------------------------------------------------
+alpha= 0.4 beta= 0.4 gamma= 0.2
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9506656296349889
+
+---------------------------------------------------------------------------
+alpha= 0.4 beta= 0.5 gamma= 0.1
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9303621169916435          0.9610027855153204         0.9721448467966574
+AutoBA MRR: 0.951501284231089
+
+---------------------------------------------------------------------------
+alpha= 0.5 beta= 0.1 gamma= 0.4
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9220055710306406          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9479729648253323
+
+---------------------------------------------------------------------------
+alpha= 0.5 beta= 0.2 gamma= 0.3
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9493657224854996
+
+---------------------------------------------------------------------------
+alpha= 0.5 beta= 0.3 gamma= 0.2
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9637883008356546         0.9721448467966574
+AutoBA MRR: 0.9502013770815998
+
+---------------------------------------------------------------------------
+alpha= 0.5 beta= 0.4 gamma= 0.1
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9610027855153204         0.9721448467966574
+AutoBA MRR: 0.9499692508049054
+
+---------------------------------------------------------------------------
+alpha= 0.6 beta= 0.1 gamma= 0.3
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9493657224854996
+
+---------------------------------------------------------------------------
+alpha= 0.6 beta= 0.2 gamma= 0.2
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9749303621169917
+AutoBA MRR: 0.9489014699321106
+
+---------------------------------------------------------------------------
+alpha= 0.6 beta= 0.3 gamma= 0.1
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9275766016713092          0.9610027855153204         0.9721448467966574
+AutoBA MRR: 0.9499692508049054
+
+---------------------------------------------------------------------------
+alpha= 0.7 beta= 0.1 gamma= 0.2
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9637883008356546         0.9777158774373259
+AutoBA MRR: 0.9489943204427883
+
+---------------------------------------------------------------------------
+alpha= 0.7 beta= 0.2 gamma= 0.1
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.9220055710306406          0.9610027855153204         0.9749303621169917
+AutoBA MRR: 0.9472765859952488
+
+---------------------------------------------------------------------------
+alpha= 0.8 beta= 0.1 gamma= 0.1
+---------------------------------------------------------------------------
+                         Top1          Top3            Top5
+Combined Accuracy         0.924791086350975          0.9610027855153204         0.9777158774373259
+AutoBA MRR: 0.9487621941660936
+[{'alpha': 0.1, 'beta': 0.1, 'gamma': 0.8, 'top1': 0.9220055710306406, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9475087122719433}, {'alpha': 0.1, 'beta': 0.2, 'gamma': 0.7, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9490407456981271}, {'alpha': 0.1, 'beta': 0.3, 'gamma': 0.6, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9489478951874494}, {'alpha': 0.1, 'beta': 0.4, 'gamma': 0.5, 'top1': 0.9275766016713092, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9502013770815997}, {'alpha': 0.1, 'beta': 0.5, 'gamma': 0.4, 'top1': 0.9303621169916435, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9515941347417668}, {'alpha': 0.1, 'beta': 0.6, 'gamma': 0.3, 'top1': 0.9303621169916435, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.952058387295156}, {'alpha': 0.1, 'beta': 0.7, 'gamma': 0.2, 'top1': 0.9303621169916435, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.952058387295156}, {'alpha': 0.1, 'beta': 0.8, 'gamma': 0.1, 'top1': 0.9275766016713092, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9508049054010055}, {'alpha': 0.2, 'beta': 0.1, 'gamma': 0.7, 'top1': 0.9220055710306406, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9475087122719433}, {'alpha': 0.2, 'beta': 0.2, 'gamma': 0.6, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9489014699321104}, {'alpha': 0.2, 'beta': 0.3, 'gamma': 0.5, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9489478951874494}, {'alpha': 0.2, 'beta': 0.4, 'gamma': 0.4, 'top1': 0.9275766016713092, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9503406528476166}, {'alpha': 0.2, 'beta': 0.5, 'gamma': 0.3, 'top1': 0.9303621169916435, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.952058387295156}, {'alpha': 0.2, 'beta': 0.6, 'gamma': 0.2, 'top1': 0.9303621169916435, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.952058387295156}, {'alpha': 0.2, 'beta': 0.7, 'gamma': 0.1, 'top1': 0.9275766016713092, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9506656296349889}, {'alpha': 0.3, 'beta': 0.1, 'gamma': 0.6, 'top1': 0.9220055710306406, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9475087122719433}, {'alpha': 0.3, 'beta': 0.2, 'gamma': 0.5, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9489014699321104}, {'alpha': 0.3, 'beta': 0.3, 'gamma': 0.4, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9488086194214326}, {'alpha': 0.3, 'beta': 0.4, 'gamma': 0.3, 'top1': 0.9275766016713092, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9508049054010055}, {'alpha': 0.3, 'beta': 0.5, 'gamma': 0.2, 'top1': 0.9303621169916435, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9521976630611726}, {'alpha': 0.3, 'beta': 0.6, 'gamma': 0.1, 'top1': 0.9303621169916435, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9515941347417669}, {'alpha': 0.4, 'beta': 0.1, 'gamma': 0.5, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9489014699321104}, {'alpha': 0.4, 'beta': 0.2, 'gamma': 0.4, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9493657224854996}, {'alpha': 0.4, 'beta': 0.3, 'gamma': 0.3, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9492728719748218}, {'alpha': 0.4, 'beta': 0.4, 'gamma': 0.2, 'top1': 0.9275766016713092, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9506656296349889}, {'alpha': 0.4, 'beta': 0.5, 'gamma': 0.1, 'top1': 0.9303621169916435, 'top3': 0.9610027855153204, 'top5': 0.9721448467966574, 'mrr': 0.951501284231089}, {'alpha': 0.5, 'beta': 0.1, 'gamma': 0.4, 'top1': 0.9220055710306406, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9479729648253323}, {'alpha': 0.5, 'beta': 0.2, 'gamma': 0.3, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9493657224854996}, {'alpha': 0.5, 'beta': 0.3, 'gamma': 0.2, 'top1': 0.9275766016713092, 'top3': 0.9637883008356546, 'top5': 0.9721448467966574, 'mrr': 0.9502013770815998}, {'alpha': 0.5, 'beta': 0.4, 'gamma': 0.1, 'top1': 0.9275766016713092, 'top3': 0.9610027855153204, 'top5': 0.9721448467966574, 'mrr': 0.9499692508049054}, {'alpha': 0.6, 'beta': 0.1, 'gamma': 0.3, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9493657224854996}, {'alpha': 0.6, 'beta': 0.2, 'gamma': 0.2, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9749303621169917, 'mrr': 0.9489014699321106}, {'alpha': 0.6, 'beta': 0.3, 'gamma': 0.1, 'top1': 0.9275766016713092, 'top3': 0.9610027855153204, 'top5': 0.9721448467966574, 'mrr': 0.9499692508049054}, {'alpha': 0.7, 'beta': 0.1, 'gamma': 0.2, 'top1': 0.924791086350975, 'top3': 0.9637883008356546, 'top5': 0.9777158774373259, 'mrr': 0.9489943204427883}, {'alpha': 0.7, 'beta': 0.2, 'gamma': 0.1, 'top1': 0.9220055710306406, 'top3': 0.9610027855153204, 'top5': 0.9749303621169917, 'mrr': 0.9472765859952488}, {'alpha': 0.8, 'beta': 0.1, 'gamma': 0.1, 'top1': 0.924791086350975, 'top3': 0.9610027855153204, 'top5': 0.9777158774373259, 'mrr': 0.9487621941660936}]

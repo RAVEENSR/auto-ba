@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-repo = {'name': 'rails'}
+repo = {'name': 'scala3'}
 
 system_defaults = {'alpha': 0.1,
                    'beta': 0.2,

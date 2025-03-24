@@ -103,6 +103,11 @@ def api_find_pr_integrators():
 
 if __name__ == '__main__':
     # creating the server
-    http_server = WSGIServer(('', 5000), app)
-    logging.info("Server started")
-    http_server.serve_forever()
+    # http_server = WSGIServer(('', 5000), app)
+    # logging.info("Server started")
+    # http_server.serve_forever()
+    result = autoba.issue_count
+    logging.info(result)
+    result2 = autoba.calculate_scores_and_get_weight_combinations_for_factors(100000)
+    logging.info("Weight Combination Accuracy Results Served")
+    print(result2)
