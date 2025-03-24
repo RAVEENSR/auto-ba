@@ -177,7 +177,9 @@ class AccuracyCalculator:
         file_accuracy_array = [0, 0, 0]
         txt_accuracy_array = [0, 0, 0]
         act_accuracy_array = [0, 0, 0]
-        df = pd.DataFrame()
+
+        rows_list = []
+
         flag = True
         for i in range(1, 9):
             for j in range(1, 9):
@@ -321,13 +323,19 @@ class AccuracyCalculator:
                                      str(avg_combined_top3_accuracy) + "         " + str(avg_combined_top5_accuracy))
                         logging.info("Combined MRR: " + str(combined_mrr))
 
-                        row = {'alpha': str(i / 10),
-                               'beta': str(j / 10),
-                               'gamma': str(k / 10),
-                               'Top1': str(avg_combined_top1_accuracy),
-                               'Top3': str(avg_combined_top3_accuracy),
-                               'Top5': str(avg_combined_top5_accuracy),
-                               'MRR': str(combined_mrr)}
-                        df = df.append(row, ignore_index=True)
+                        # Append the row dictionary to the list
+                        row = {
+                            'alpha': str(i / 10),
+                            'beta': str(j / 10),
+                            'gamma': str(k / 10),
+                            'Top1': str(avg_combined_top1_accuracy),
+                            'Top3': str(avg_combined_top3_accuracy),
+                            'Top5': str(avg_combined_top5_accuracy),
+                            'MRR': str(combined_mrr)
+                        }
+                        rows_list.append(row)
 
-        df.to_csv(str(autoba_processor.database) + ".csv", index=False)
+        # Build the DataFrame once from the collected rows and save to CSV
+        df = pd.DataFrame(rows_list)
+        df.to_csv(str(autoba_processor.repo_name)
+                  + "_weight_combination_accuracy_with_individual_factor_accuracy.csv", index=False)
