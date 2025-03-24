@@ -162,13 +162,12 @@ class AccuracyCalculator:
     def __test_activeness_accuracy(self, ranked_data_frame, new_issue, top1=True, top3=False, top5=False):
         return self.__test_accuracy_by_field(ranked_data_frame, new_issue, 'activeness_rank', top1, top3, top5)
 
-    def test_weight_combination_accuracy_for_all_issues_with_individual_factor_accuracy(self, autoba_processor, offset,
-                                                                                     limit, main_data_frame):
+    def test_weight_combination_accuracy_for_all_issues_with_individual_factor_accuracy(self, autoba_processor,
+                                                                                        limit, main_data_frame):
         query1 = "SELECT issue_id, creator_login_id, created_date, closed_date, closed_by, commenters, title, " \
                  "description, files, resolvers " \
                  "FROM issue " \
-                 "WHERE issue_id > '%s' and issue_id <= '%s' " \
-                 "LIMIT %d" % (offset, offset + limit, limit)
+                 "LIMIT %d" % limit
         all_issues = self.spark.sql(query1)
 
         file_path__similarity_mrr = 0
