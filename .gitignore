@@ -175,8 +175,9 @@ cython_debug/
 
 autoba/dataset/*fetch_state.json
 autoba/dataset/*github_fetch.log
-autoba/dataset/*issue-details.csv
-autoba/dataset/*related-pr-details.csv
+autoba/dataset/*issue_details.csv
+autoba/dataset/*related_pr_details.csv
 autoba/app.log
+autoba/dataset/*updated_issue_details.csv
 
 .DS_Store
